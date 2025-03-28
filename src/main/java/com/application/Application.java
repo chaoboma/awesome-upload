@@ -13,10 +13,4 @@ public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
-    @Bean
-    public ServletRegistrationBean<FileUploadServlet> servletRegistrationBean() {
-        ServletRegistrationBean<FileUploadServlet> bean = new ServletRegistrationBean<>(new FileUploadServlet(), "/upload");
-        bean.setLoadOnStartup(1);
-        return bean;
-    }
 }
