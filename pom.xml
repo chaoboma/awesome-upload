@@ -34,18 +34,17 @@
             <artifactId>commons-fileupload</artifactId>
             <version>1.5</version>
         </dependency>
-        <!-- Spring Boot Web 启动器，但排除 Tomcat -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!--druid-->
+        <!--druid
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid-spring-boot-starter</artifactId>
             <version>1.2.6</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
