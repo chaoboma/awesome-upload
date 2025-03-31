@@ -1,5 +1,6 @@
 package com.application.config;
 
+import com.application.Interceptor.ApiSignInterceptor;
 import com.application.Interceptor.AuthenticationInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,7 @@ import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -21,15 +23,23 @@ import java.util.List;
  */
 @Configuration
 public class InterceptorConfig implements WebMvcConfigurer {
+    //@Bean
+    //public AuthenticationInterceptor authenticationInterceptor() {
+    //     return new AuthenticationInterceptor();
+    //}
+    @Resource
+    private ApiSignInterceptor apiSignInterceptor;
+
+    //@Resource
+    //private AuthenticationInterceptor authenticationInterceptor;
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authenticationInterceptor())
-                .addPathPatterns("/**");    // 拦截所有请求，通过判断是否有 @LoginRequired 注解 决定是否需要登录
+        //registry.addInterceptor(authenticationInterceptor)
+        //        .addPathPatterns("/**");    // 拦截所有请求，通过判断是否有 @LoginRequired 注解 决定是否需要登录
+        //registry.addInterceptor(apiSignInterceptor)
+        //        .addPathPatterns("/**");
     }
-    @Bean
-    public AuthenticationInterceptor authenticationInterceptor() {
-        return new AuthenticationInterceptor();
-    }
+
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> arg0) {
         // TODO Auto-generated method stub

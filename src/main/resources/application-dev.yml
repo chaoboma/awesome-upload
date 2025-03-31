@@ -30,3 +30,6 @@ swagger:
   host: localhost:8080
 file:
   path: d:\tmp
+
+filter:
+  timeout: 1000

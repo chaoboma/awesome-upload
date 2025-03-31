@@ -3,9 +3,11 @@ package com.application.controller;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.application.common.Result;
+import com.application.domain.dao.req.TestInterceptorReq;
 import com.application.utils.TimeUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
+import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +33,7 @@ import java.nio.file.StandardOpenOption;
 @RestController
 @RequestMapping("/file")
 @CrossOrigin(origins = "*")
-
+@Slf4j
 public class FileController {
     /**
      * query
@@ -45,6 +48,10 @@ public class FileController {
         return Result.success(id);
     }
 
+    @PostMapping("/testInterceptor")
+    public Result<Object> testInterceptor(@RequestBody TestInterceptorReq request){
+        return Result.success(request.getLineName());
+    }
     @PostMapping("/upload")
     public String upload(HttpServletRequest request){
         //System.out.println("1:"+TimeUtils.getNowTime());
