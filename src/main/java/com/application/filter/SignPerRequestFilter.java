@@ -52,7 +52,7 @@ public class SignPerRequestFilter extends OncePerRequestFilter {
 
                     try{
                         if(!bodyStr.equals("")){
-                            encodedBody = URLEncoder.encode(bodyStr, "UTF-8");
+                            encodedBody = DigestUtils.sha256Hex(bodyStr);
                         }
 
                     }catch(Exception e){
@@ -66,7 +66,7 @@ public class SignPerRequestFilter extends OncePerRequestFilter {
                 }
                 log.debug("sign:"+sign);
                 String salt = "241rew";
-                String signBackend = DigestUtils.md5Hex(encodedBody + salt);
+                String signBackend = DigestUtils.sha256Hex(encodedBody + salt);
                 log.debug("signBackend:"+signBackend);
                 if (!sign.equals(signBackend)) {
                     ((HttpServletResponse) response).sendError(400, "sign invalid");
