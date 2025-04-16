@@ -5,6 +5,8 @@ import cn.hutool.json.JSONObject;
 import com.application.common.Result;
 import com.application.domain.dao.req.TestInterceptorReq;
 import com.application.utils.TimeUtils;
+import com.application.utils.excel.DynamicExcelData;
+import com.application.utils.excel.ExcelDynamicExport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import javax.validation.Valid;
 import java.io.File;
@@ -29,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.*;
 
 @RestController
 @RequestMapping("/file")
@@ -51,6 +55,36 @@ public class FileController {
     @PostMapping("/testInterceptor")
     public Result<Object> testInterceptor(@RequestBody TestInterceptorReq request){
         return Result.success(request.getLineName());
+    }
+    @PostMapping("/export")
+    public void export(HttpServletResponse response) throws IOException {
+
+        //模拟数据
+        //一般动态数据使用的是List，然后内部使用Map进行数据的接受
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            HashMap<String, Object> map = new HashMap<>();
+            for (int j = 0; j < 5; j++) {
+                map.put("title"+j,i+","+j);
+            }
+            //这个用于测试值如果为null时，能否进行默认值填充
+            map.put("title5",null);
+            list.add(map);
+        }
+
+
+        //使用LinkedHashMap进行表头字段映射
+        LinkedHashMap<String, DynamicExcelData> nameMap = new LinkedHashMap<>();
+        nameMap.put("title1",new DynamicExcelData("年龄","0"));
+        nameMap.put("title0",new DynamicExcelData("姓名","0"));
+        nameMap.put("title2",new DynamicExcelData("职业","0"));
+        nameMap.put("title3",new DynamicExcelData("爱好","0"));
+        nameMap.put("title4",new DynamicExcelData("小名","0"));
+        nameMap.put("title5",new DynamicExcelData("空白字段","0"));
+
+        //调用方法,方法已在步骤3进行介绍
+        ExcelDynamicExport.dynamicExport(response,nameMap, list,"模板");
+
     }
     @PostMapping("/upload")
     public String upload(HttpServletRequest request){

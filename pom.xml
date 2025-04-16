@@ -301,7 +301,11 @@
             <artifactId>sa-token-dao-redis-jackson</artifactId>
             <version>1.29.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+            <version>3.0.5</version>
+        </dependency>
     </dependencies>
 
 
