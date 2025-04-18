@@ -129,7 +129,7 @@ public class FileController {
     /**
      *
      */
-    @MultipartEnabled
+    //@MultipartEnabled
     @PostMapping(path = "/upload2")
     public ResponseEntity<String> upload2(@RequestParam(value = "file") MultipartFile file){
         System.out.println("start:"+ TimeUtils.getNowTime());
@@ -170,7 +170,7 @@ public class FileController {
     /**
      *
      */
-    @MultipartEnabled
+    //@MultipartEnabled
     @PostMapping(path = "/upload3")
     public ResponseEntity<String> upload3(@RequestParam(value = "file") MultipartFile file){
         CommonsMultipartResolver multipartResolver = (CommonsMultipartResolver) BeanUtils.getBean("multipartResolver");
@@ -207,6 +207,16 @@ public class FileController {
                 e.printStackTrace();
             }
         }
+
+
+        return ResponseEntity.ok("File uploaded successfully");
+    }
+    /**
+     *
+     */
+    //@MultipartEnabled
+    @PostMapping(path = "/upload4")
+    public ResponseEntity<String> upload4(HttpServletRequest request,HttpServletResponse response){
 
 
         return ResponseEntity.ok("File uploaded successfully");
