@@ -3,7 +3,9 @@ package com.application.controller;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.application.common.Result;
+import com.application.config.MultipartEnabled;
 import com.application.domain.dao.req.TestInterceptorReq;
+import com.application.utils.BeanUtils;
 import com.application.utils.TimeUtils;
 import com.application.utils.excel.DynamicExcelData;
 import com.application.utils.excel.ExcelDynamicExport;
@@ -15,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import javax.validation.Valid;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -120,5 +125,90 @@ public class FileController {
             return "Upload failed: " + e.getMessage();
         }
 
+    }
+    /**
+     *
+     */
+    @MultipartEnabled
+    @PostMapping(path = "/upload2")
+    public ResponseEntity<String> upload2(@RequestParam(value = "file") MultipartFile file){
+        System.out.println("start:"+ TimeUtils.getNowTime());
+        ReadableByteChannel inChannel = null;
+        FileChannel outChannel = null;
+        FileOutputStream fos = null;
+        try{
+            inChannel = Channels.newChannel(file.getInputStream());
+            System.out.println("inChannel:"+ TimeUtils.getNowTime());
+            fos = new FileOutputStream("d:\\tmp\\"+ File.separator+file.getOriginalFilename());
+            System.out.println("new FileOutputStream:"+ TimeUtils.getNowTime());
+            outChannel = fos.getChannel();
+            System.out.println("fos.getChannel:"+ TimeUtils.getNowTime());
+            outChannel.transferFrom(inChannel,0,file.getSize());
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            System.out.println("finally:"+ TimeUtils.getNowTime());
+            //关闭资源
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+                if (inChannel != null) {
+                    inChannel.close();
+                }
+                if (outChannel != null) {
+                    outChannel.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        return ResponseEntity.ok("File uploaded successfully");
+    }
+    /**
+     *
+     */
+    @MultipartEnabled
+    @PostMapping(path = "/upload3")
+    public ResponseEntity<String> upload3(@RequestParam(value = "file") MultipartFile file){
+        CommonsMultipartResolver multipartResolver = (CommonsMultipartResolver) BeanUtils.getBean("multipartResolver");
+        System.out.println("size:"+multipartResolver.getFileItemFactory().getSizeThreshold());
+        multipartResolver.setMaxUploadSize(10*1024*1024);
+        System.out.println("start:"+ TimeUtils.getNowTime());
+        ReadableByteChannel inChannel = null;
+        FileChannel outChannel = null;
+        FileOutputStream fos = null;
+        try{
+            inChannel = Channels.newChannel(file.getInputStream());
+            System.out.println("inChannel:"+ TimeUtils.getNowTime());
+            fos = new FileOutputStream("d:\\tmp\\"+ File.separator+file.getOriginalFilename());
+            System.out.println("new FileOutputStream:"+ TimeUtils.getNowTime());
+            outChannel = fos.getChannel();
+            System.out.println("fos.getChannel:"+ TimeUtils.getNowTime());
+            outChannel.transferFrom(inChannel,0,file.getSize());
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            System.out.println("finally:"+ TimeUtils.getNowTime());
+            //关闭资源
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+                if (inChannel != null) {
+                    inChannel.close();
+                }
+                if (outChannel != null) {
+                    outChannel.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        return ResponseEntity.ok("File uploaded successfully");
     }
 }
