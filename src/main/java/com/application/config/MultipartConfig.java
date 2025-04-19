@@ -35,6 +35,16 @@ public class MultipartConfig {
         return null;
     }
 //    @Bean(name = "multipartResolver")
+//    public MultipartResolver multipartResolver() {
+//        try{
+//            StandardServletMultipartResolver multipartResolver =new CustomMultipartResolver2();
+//            return multipartResolver;
+//        }catch(Exception e){
+//
+//        }
+//        return null;
+//    }
+//    @Bean(name = "multipartResolver")
 //    public MultipartResolver multipartResolver(){
 //        CommonsMultipartResolver resolver = new CommonsMultipartResolver();
 //        resolver.setDefaultEncoding("UTF-8");
@@ -45,4 +55,23 @@ public class MultipartConfig {
 //        resolver.setMaxUploadSize(50*1024*1024);
 //        return resolver;
 //    }
+    /**
+     * 配置Multipart参数
+     */
+//    @Bean
+//    public MultipartConfigElement multipartConfigElement() {
+//        MultipartConfigFactory factory = new MultipartConfigFactory();
+//
+//        // 设置单个文件最大大小为10MB
+//        factory.setMaxFileSize(DataSize.ofMegabytes(4));
+//        // 设置单次请求最大大小为20MB
+//        factory.setMaxRequestSize(DataSize.ofMegabytes(20));
+//        factory.setFileSizeThreshold(1024);
+//        // 设置临时文件存储位置
+//        String tempDir = System.getProperty("java.io.tmpdir");
+//        factory.setLocation("d:\\upload");
+//
+//        return factory.createMultipartConfig();
+//    }
+
 }

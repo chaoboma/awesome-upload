@@ -12,6 +12,9 @@ import com.application.utils.excel.ExcelDynamicExport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -93,7 +97,12 @@ public class FileController {
     }
     @PostMapping("/upload")
     public String upload(HttpServletRequest request){
-        //System.out.println("1:"+TimeUtils.getNowTime());
+
+        //CommonsMultipartResolver multipartResolver = (CommonsMultipartResolver) BeanUtils.getBean("multipartResolver");
+        //System.out.println("isMultipart:"+multipartResolver.isMultipart(request));
+        //StandardServletMultipartResolver multipartResolver = (StandardServletMultipartResolver) BeanUtils.getBean("multipartResolver");
+        //System.out.println("isMultipart:"+multipartResolver.isMultipart(request));
+        System.out.println("1:"+TimeUtils.getNowTime());
         String fileName = request.getHeader("filename");
         File targetFile = new File("d:\\upload2", fileName);
         //System.out.println("1:"+TimeUtils.getNowTime());
@@ -131,7 +140,9 @@ public class FileController {
      */
     //@MultipartEnabled
     @PostMapping(path = "/upload2")
-    public ResponseEntity<String> upload2(@RequestParam(value = "file") MultipartFile file){
+    public ResponseEntity<String> upload2(@RequestParam(value = "file") MultipartFile file,HttpServletRequest request){
+        //StandardServletMultipartResolver multipartResolver = (StandardServletMultipartResolver) BeanUtils.getBean("multipartResolver");
+        //System.out.println("2 isMultipart:"+multipartResolver.isMultipart(request));
         System.out.println("start:"+ TimeUtils.getNowTime());
         ReadableByteChannel inChannel = null;
         FileChannel outChannel = null;
@@ -172,10 +183,12 @@ public class FileController {
      */
     //@MultipartEnabled
     @PostMapping(path = "/upload3")
-    public ResponseEntity<String> upload3(@RequestParam(value = "file") MultipartFile file){
-        CommonsMultipartResolver multipartResolver = (CommonsMultipartResolver) BeanUtils.getBean("multipartResolver");
-        System.out.println("size:"+multipartResolver.getFileItemFactory().getSizeThreshold());
-        multipartResolver.setMaxUploadSize(10*1024*1024);
+    public ResponseEntity<String> upload3(@RequestParam(value = "file") MultipartFile file,HttpServletRequest request){
+        //StandardServletMultipartResolver multipartResolver = (StandardServletMultipartResolver) BeanUtils.getBean("multipartResolver");
+        //System.out.println("3 isMultipart:"+multipartResolver.isMultipart(request));
+        //CommonsMultipartResolver multipartResolver = (CommonsMultipartResolver) BeanUtils.getBean("multipartResolver");
+        //System.out.println("size:"+multipartResolver.getFileItemFactory().getSizeThreshold());
+        //multipartResolver.setMaxUploadSize(10*1024*1024);
         System.out.println("start:"+ TimeUtils.getNowTime());
         ReadableByteChannel inChannel = null;
         FileChannel outChannel = null;
@@ -219,6 +232,39 @@ public class FileController {
     public ResponseEntity<String> upload4(HttpServletRequest request,HttpServletResponse response){
 
 
+        return ResponseEntity.ok("File uploaded successfully");
+    }
+    @PostMapping(path = "/upload5")
+    public ResponseEntity<String> upload5(HttpServletRequest request,HttpServletResponse response){
+
+        try{
+            String uploadDir = "d:\\upload2\\";
+            if (ServletFileUpload.isMultipartContent(request)) {
+                DiskFileItemFactory factory = new DiskFileItemFactory();
+                ServletFileUpload upload = new ServletFileUpload(factory);
+                try {
+                    List<FileItem> items = upload.parseRequest(request);
+                    for (FileItem item : items) {
+                        if (!item.isFormField()) {
+                            // 确保上传目录存在
+                            File directory = new File(uploadDir);
+                            if (!directory.exists()) {
+                                directory.mkdirs();
+                            }
+                            // 保存文件
+                            File uploadFile = new File(uploadDir, item.getName());
+                            item.write(uploadFile);
+                        }
+                    }
+                    response.getWriter().write("success");
+                } catch (Exception e) {
+                    response.getWriter().write("fail:" + e.getMessage());
+                }
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         return ResponseEntity.ok("File uploaded successfully");
     }
 }
