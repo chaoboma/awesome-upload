@@ -10,6 +10,7 @@ public class CustomMultipartResolver2 extends StandardServletMultipartResolver {
     @Override
     public boolean isMultipart(HttpServletRequest request) {
         String path = request.getRequestURI();
+        System.out.println("isMultipart called for path: " + path);
         // 检查路径是否以允许的路径开头，例如/api/upload
         if (path.startsWith("/file/upload3")) {
             return true;

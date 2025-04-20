@@ -143,6 +143,9 @@ public class FileController {
     public ResponseEntity<String> upload2(@RequestParam(value = "file") MultipartFile file,HttpServletRequest request){
         //StandardServletMultipartResolver multipartResolver = (StandardServletMultipartResolver) BeanUtils.getBean("multipartResolver");
         //System.out.println("2 isMultipart:"+multipartResolver.isMultipart(request));
+//        if(!multipartResolver.isMultipart(request)){
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Multipart upload not allowed on this path");
+//        }
         System.out.println("start:"+ TimeUtils.getNowTime());
         ReadableByteChannel inChannel = null;
         FileChannel outChannel = null;
@@ -229,7 +232,7 @@ public class FileController {
      */
     //@MultipartEnabled
     @PostMapping(path = "/upload4")
-    public ResponseEntity<String> upload4(HttpServletRequest request,HttpServletResponse response){
+    public ResponseEntity<String> upload4(HttpServletRequest request){
 
 
         return ResponseEntity.ok("File uploaded successfully");

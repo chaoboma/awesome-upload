@@ -38,9 +38,10 @@ public class MultipartConfig {
 //    public MultipartResolver multipartResolver() {
 //        try{
 //            StandardServletMultipartResolver multipartResolver =new CustomMultipartResolver2();
+//            System.out.println("multipartResolver bean initialized" );
 //            return multipartResolver;
 //        }catch(Exception e){
-//
+//            e.printStackTrace();
 //        }
 //        return null;
 //    }
@@ -69,6 +70,7 @@ public class MultipartConfig {
 //        factory.setFileSizeThreshold(1024);
 //        // 设置临时文件存储位置
 //        String tempDir = System.getProperty("java.io.tmpdir");
+//        System.out.println("MultipartConfigElement initialized with tempDir: " + tempDir);
 //        factory.setLocation("d:\\upload");
 //
 //        return factory.createMultipartConfig();

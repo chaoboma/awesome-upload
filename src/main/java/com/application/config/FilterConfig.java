@@ -15,10 +15,10 @@ import org.springframework.context.annotation.Configuration;
 public class FilterConfig {
     @Value("${filter.timeout}")
     private Integer timeout;
-    //@Bean
-    //public FilterRegistrationBean decryptingFilterRegistration() {
-    //    FilterRegistrationBean registrationBean =
-    //        new FilterRegistrationBean();
+ //   @Bean
+ //   public FilterRegistrationBean decryptingFilterRegistration() {
+ //       FilterRegistrationBean registrationBean =
+//            new FilterRegistrationBean();
         //注册过滤器
         //SignPerRequestFilter filter = new SignPerRequestFilter();
         //filter.timeout = timeout;
@@ -28,6 +28,7 @@ public class FilterConfig {
 //        FileUploadFilter fileUploadFilter = new FileUploadFilter();
 //        registrationBean.setFilter(fileUploadFilter);
 //        registrationBean.addUrlPatterns("/file/upload4");
-    //    return registrationBean;
-   // }
+//        registrationBean.setOrder(1);
+//        return registrationBean;
+//    }
 }
