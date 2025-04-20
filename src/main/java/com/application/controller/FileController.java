@@ -5,6 +5,7 @@ import cn.hutool.json.JSONObject;
 import com.application.common.Result;
 import com.application.config.MultipartEnabled;
 import com.application.domain.dao.req.TestInterceptorReq;
+import com.application.upload.UploadProgressListener;
 import com.application.utils.BeanUtils;
 import com.application.utils.TimeUtils;
 import com.application.utils.excel.DynamicExcelData;
@@ -146,7 +147,21 @@ public class FileController {
 //        if(!multipartResolver.isMultipart(request)){
 //            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Multipart upload not allowed on this path");
 //        }
-        System.out.println("start:"+ TimeUtils.getNowTime());
+        try {
+            // 将 uploadId 绑定到当前线程
+            UploadProgressListener.setCurrentUploadId("1");
+
+            // 模拟文件保存（实际替换为你的业务逻辑）
+            Files.copy(file.getInputStream(), Paths.get("d:\\tmp\\" + file.getOriginalFilename()));
+
+            return ResponseEntity.ok("Upload success");
+        }catch (Exception e){
+
+        }finally {
+            // 清理线程变量
+            UploadProgressListener.clear();
+        }
+            System.out.println("start:"+ TimeUtils.getNowTime());
         ReadableByteChannel inChannel = null;
         FileChannel outChannel = null;
         FileOutputStream fos = null;

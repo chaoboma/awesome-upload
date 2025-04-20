@@ -1,19 +1,12 @@
-package com.application.config;
+package com.application.upload;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration;
-import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.util.unit.DataSize;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
-import org.springframework.web.multipart.support.StandardServletMultipartResolver;
-
-import javax.servlet.MultipartConfigElement;
-import java.io.File;
 
 @Configuration
 @EnableAutoConfiguration(exclude = MultipartAutoConfiguration.class)
@@ -33,6 +26,10 @@ public class MultipartConfig {
 
         }
         return null;
+    }
+    @Bean
+    public UploadProgressListener uploadProgressListener() {
+        return new UploadProgressListener();
     }
 //    @Bean(name = "multipartResolver")
 //    public MultipartResolver multipartResolver() {
