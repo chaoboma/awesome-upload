@@ -285,4 +285,9 @@ public class FileController {
         }
         return ResponseEntity.ok("File uploaded successfully");
     }
+    @PostMapping("/upload6")
+    public ResponseEntity<String> upload6(@RequestParam("file") MultipartFile file) {
+        // 文件处理逻辑
+        return ResponseEntity.ok("File uploaded successfully");
+    }
 }

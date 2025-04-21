@@ -1,5 +1,6 @@
 package com.application.upload;
 
+import org.apache.commons.fileupload.ProgressListener;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -14,23 +15,35 @@ public class MultipartConfig {
     /**
      *
      */
-    @Bean(name = "multipartResolver")
-    public MultipartResolver multipartResolver() {
-        try{
-            CommonsMultipartResolver multipartResolver =new CustomMultipartResolver();
-            multipartResolver.setMaxUploadSize(4*1024*1024);
-            multipartResolver.setMaxInMemorySize(1024);
-            multipartResolver.setUploadTempDir(new FileSystemResource("d:\\upload"));
-            return multipartResolver;
-        }catch(Exception e){
-
-        }
-        return null;
-    }
     @Bean
-    public UploadProgressListener uploadProgressListener() {
-        return new UploadProgressListener();
+    public CustomMultipartResolver3 multipartResolver() {
+        CustomMultipartResolver3 resolver = new CustomMultipartResolver3();
+        resolver.setProgressListener(new ProgressListener() {
+            @Override
+            public void update(long bytesRead, long contentLength, int items) {
+                double progress = (double) bytesRead / contentLength * 100;
+                System.out.printf("Progress: %.2f%%%n", progress);
+            }
+        });
+        return resolver;
     }
+//    @Bean(name = "multipartResolver")
+//    public MultipartResolver multipartResolver() {
+//        try{
+//            CommonsMultipartResolver multipartResolver =new CustomMultipartResolver();
+//            multipartResolver.setMaxUploadSize(4*1024*1024);
+//            multipartResolver.setMaxInMemorySize(1024);
+//            multipartResolver.setUploadTempDir(new FileSystemResource("d:\\upload"));
+//            return multipartResolver;
+//        }catch(Exception e){
+//
+//        }
+//        return null;
+//    }
+//    @Bean
+//    public UploadProgressListener uploadProgressListener() {
+//        return new UploadProgressListener();
+//    }
 //    @Bean(name = "multipartResolver")
 //    public MultipartResolver multipartResolver() {
 //        try{
