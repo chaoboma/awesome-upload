@@ -46,6 +46,9 @@ import java.util.*;
 @CrossOrigin(origins = "*")
 @Slf4j
 public class FileController {
+    static void f(Object obj) {
+        System.out.println(obj);
+    }
     /**
      * query
      *
@@ -116,22 +119,9 @@ public class FileController {
         //String responseContentType = response.getContentType();
         //System.out.println("responseContentType:"+responseContentType);
 
-        String boundary = "--" + requestContentType.split("boundary=")[1].replace("\"", "");  // 如: "--abc123"
-        System.out.println("boundary:"+boundary);
-        String line1 = boundary+"\n";
-        String line2 = "Content-Disposition: form-data; name=\"file\"; filename=\""+fileName+"\"\n";
-        String line3 = "\n";
-        if(fileName.endsWith(".txt")){
-            line3 = "Content-Type: text/plain"+"\n";
-        }
-        String line4 = "\n";
-        String line5 = boundary+"--\n";
-        String line6 = "\n";
+        //String boundary = "--" + requestContentType.split("boundary=")[1].replace("\"", "");  // 如: "--abc123"
+        //System.out.println("boundary:"+boundary);
 
-        String headStart = line1+line2+line3+line4;
-        String headEnd = line5+line6;
-        int headStartByteLength = headStart.getBytes().length;
-        int headEndByteLength = headEnd.getBytes().length;
 
         try {
             InputStream is = request.getInputStream();
@@ -496,51 +486,109 @@ public class FileController {
         //StandardServletMultipartResolver multipartResolver = (StandardServletMultipartResolver) BeanUtils.getBean("multipartResolver");
         //System.out.println("isMultipart:"+multipartResolver.isMultipart(request));
         System.out.println("1:"+TimeUtils.getNowTime());
-        String fileName = request.getHeader("filename");
-        File targetFile = new File("d:\\upload2", fileName);
+        //String fileName = request.getHeader("filename");
+        File targetFile = new File("d:\\upload2\\2.txt");
         if(targetFile.exists()){
             targetFile.delete();
         }
+        String accept_encoding = request.getHeader("Accept-Encoding");
+        f("accept_encoding:"+accept_encoding);
+
+        String content_length = request.getHeader("Content-Length");
+        f("content_length:"+content_length);
         //System.out.println("1:"+TimeUtils.getNowTime());
         // 使用FileChannel直接写入磁盘
         String requestContentType = request.getContentType();
         System.out.println("requestContentType:"+requestContentType);
         //String responseContentType = response.getContentType();
         //System.out.println("responseContentType:"+responseContentType);
-
+        int contentLengthLongTotalInt = request.getContentLength();
+        System.out.println("contentLengthLongTotalInt:"+contentLengthLongTotalInt);
         String boundary = "--" + requestContentType.split("boundary=")[1].replace("\"", "");  // 如: "--abc123"
         System.out.println("boundary:"+boundary);
-        String line1 = boundary+"\n";
-        String line2 = "Content-Disposition: form-data; name=\"file\"; filename=\""+fileName+"\"\n";
-        String line3 = "\n";
-        if(fileName.endsWith(".txt")){
-            line3 = "Content-Type: text/plain"+"\n";
-        }
-        String line4 = "\n";
-        String line5 = boundary+"--\n";
-        String line6 = "\n";
+        String line1 = boundary;
+        f("line1_len:"+line1.length());
+        String line2 = "Content-Disposition: form-data; name=\"file\"; filename=\"2.txt\"";
+        f("line2_len:"+line2.length());
+        String line3 = "";
+        //if(fileName.endsWith(".txt")){
+            line3 = "Content-Type: text/plain";
+        //}
+        f("line3_len:"+line3.length());
+        String line4 = "";
+        f("line4_len:"+line4.length());
+        String line5 = boundary+"--";
+        f("line5_len:"+line5.length());
 
         String headStart = line1+line2+line3+line4;
-        String headEnd = line5+line6;
-        int headStartByteLength = headStart.getBytes().length;
-        int headEndByteLength = headEnd.getBytes().length;
+        String headEnd = line5;
+        //String test = "123";
+        //long testLength = test.getBytes().length;
+        //System.out.println("testLength:"+testLength);
+        System.out.print("headStart:"+headStart);
+        System.out.print("headEnd:"+headEnd);
+        long headStartByteLength = headStart.getBytes().length;
+        long headEndByteLength = headEnd.getBytes().length;
+        System.out.println("headStartByteLength:"+headStartByteLength);
+        System.out.println("headEndByteLength:"+headEndByteLength);
+        int bufferSize = 1024;
 
         try {
             InputStream inputStream = request.getInputStream();
-            FileOutputStream ouputStream = new FileOutputStream("d:\\upload2\\"+fileName);
-            long contentLengthLong = request.getContentLengthLong();
-            System.out.println("contentLengthLong:"+contentLengthLong);
-            System.out.println("2:"+TimeUtils.getNowTime());
-            byte b[] = new byte[1024];
-            int n;
-            while ((n = inputStream.read(b)) != -1) {
-                ouputStream.write(b, 0, n);
+
+//            f("inputStream.read():"+inputStream.read());
+//            byte c[] = new byte[1024];
+//            int m = inputStream.read(c);
+//            f("m:"+m);
+//            f(c.length);
+            //BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+
+//            String line;
+//            int line_length_sum = 0;
+//            while ((line = reader.readLine()) != null) {
+//
+//                System.out.println(line);
+//                int line_length = line.getBytes().length;
+//                line_length_sum = line_length_sum + line_length;
+//                f("line_length:"+line_length);
+//            }
+//            f("line_length_sum:"+line_length_sum);
+            FileOutputStream ouputStream = new FileOutputStream("d:\\upload2\\2.txt");
+            long contentLengthLongTotal = request.getContentLengthLong() - 12;
+
+            long contentLengthLong = contentLengthLongTotal - headStartByteLength - headEndByteLength;
+            if(contentLengthLong == 0){
+                inputStream.close();
+                ouputStream.flush();
+                ouputStream.close();
+                return "Upload success: 1";
             }
+            System.out.println("contentLengthLong:"+contentLengthLong);
+            System.out.println("contentLengthLongTotal:"+contentLengthLongTotal);
+            System.out.println("2:"+TimeUtils.getNowTime());
+            byte b[] = new byte[bufferSize];
+            int n;
+            long times = contentLengthLong / (long)bufferSize;
+            long mod = contentLengthLong % (long)bufferSize;
+            inputStream.read(b,0,30);
+            //inputStream.read(b);
+            ouputStream.write(b, 0, 30);
+//            System.out.println("times:"+times);
+//            for(long j = 0;j <= times;j++){
+//                n = inputStream.read(b);
+//                if(j > (times - 1)){
+//                    ouputStream.write(b, 0, (int)mod);
+//                }else if(j == 0){
+//                    ouputStream.write(b, (int)headStartByteLength+1, n);
+//                }else {
+//                    ouputStream.write(b, 0, n);
+//                }
+//            }
             inputStream.close();
             ouputStream.flush();
             ouputStream.close();
             System.out.println("3:"+TimeUtils.getNowTime());
-            return "Upload success: " + fileName;
+            return "Upload success: ";
         } catch (IOException e) {
             e.printStackTrace();
             return "Upload failed: " + e.getMessage();
