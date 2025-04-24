@@ -476,7 +476,7 @@ public class FileController {
         }
     }
     /*
-     * 这个方法涉及到request.getInputStream()结果中header信息的清除，
+     * 这个方法涉及到request.getInputStream()结果中header信息的清除，用的堆内存缓冲区，文本文件类型已成功
      * */
     @PostMapping("/upload9")
     public String upload9(HttpServletRequest request, HttpServletResponse response,@RequestParam (value="filename") String fileName){
@@ -506,9 +506,17 @@ public class FileController {
         String line2 = "Content-Disposition: form-data; name=\"file\"; filename=\""+fileName+"\"";
         f("line2_len:"+line2.length());
         String line3 = "";
-        //if(fileName.endsWith(".txt")){
+        int sub = 104;
+        if(fileName.endsWith(".txt")){
             line3 = "Content-Type: text/plain";
-        //}
+            sub = 104;
+        }else if(fileName.endsWith(".exe")){
+            line3 = "Content-Type: application/x-msdos-program";
+            sub = 121;
+        }else{
+            line3 = "Content-Type: application/octet-stream";
+            sub = 118;
+        }
         f("line3_len:"+line3.length());
         String line4 = "";
         f("line4_len:"+line4.length());
@@ -523,7 +531,7 @@ public class FileController {
         long headEndByteLength = headEnd.getBytes().length;
         System.out.println("headStartByteLength:"+headStartByteLength);
         System.out.println("headEndByteLength:"+headEndByteLength);
-        int bufferSize = 1024;
+        int bufferSize = 8192;
 
         try {
             InputStream inputStream = request.getInputStream();
@@ -546,7 +554,7 @@ public class FileController {
             //long times = contentLengthLong / (long)bufferSize;
             //long mod = contentLengthLong % (long)bufferSize;
             int fileNameLength = fileName.length();
-            int headLength = 104 + fileNameLength;
+            int headLength = sub + fileNameLength;
             int headTimes = (headLength / bufferSize) + 1;
             f("headTimes:"+headTimes);
             int headMod = headLength % bufferSize;
@@ -598,6 +606,269 @@ public class FileController {
             inputStream.close();
             ouputStream.flush();
             ouputStream.close();
+            b = null;
+            System.out.println("3:"+TimeUtils.getNowTime());
+            return "Upload success: ";
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Upload failed: " + e.getMessage();
+        }
+    }
+
+    /*
+     * 这个方法涉及到request.getInputStream()结果中header信息的清除，用channel，没成功
+     * */
+    @PostMapping("/upload10")
+    public String upload10(HttpServletRequest request, HttpServletResponse response,@RequestParam (value="filename") String fileName){
+        System.out.println("1:"+TimeUtils.getNowTime());
+        File targetFile = new File("d:\\upload2\\"+fileName);
+        if(targetFile.exists()){
+            targetFile.delete();
+        }
+        String accept_encoding = request.getHeader("Accept-Encoding");
+        f("accept_encoding:"+accept_encoding);
+        String content_length = request.getHeader("Content-Length");
+        f("content_length:"+content_length);
+        String requestContentType = request.getContentType();
+        System.out.println("requestContentType:"+requestContentType);
+        long contentLengthLongTotalLong = request.getContentLengthLong();
+        System.out.println("contentLengthLongTotalLong:"+contentLengthLongTotalLong);
+        String boundary = "--" + requestContentType.split("boundary=")[1].replace("\"", "");  // 如: "--abc123"
+        System.out.println("boundary:"+boundary);
+        String line1 = boundary;
+        f("line1_len:"+line1.length());
+        String line2 = "Content-Disposition: form-data; name=\"file\"; filename=\""+fileName+"\"";
+        f("line2_len:"+line2.length());
+        String line3 = "";
+        //if(fileName.endsWith(".txt")){
+        line3 = "Content-Type: text/plain";
+        //}
+        f("line3_len:"+line3.length());
+        String line4 = "";
+        f("line4_len:"+line4.length());
+        String line5 = boundary+"--";
+        f("line5_len:"+line5.length());
+
+        String headStart = line1+line2+line3+line4;
+        String headEnd = line5;
+        System.out.print("headStart:"+headStart);
+        System.out.print("headEnd:"+headEnd);
+        long headStartByteLength = headStart.getBytes().length;
+        long headEndByteLength = headEnd.getBytes().length;
+        System.out.println("headStartByteLength:"+headStartByteLength);
+        System.out.println("headEndByteLength:"+headEndByteLength);
+        try {
+            InputStream inputStream = request.getInputStream();
+            FileOutputStream ouputStream = new FileOutputStream("d:\\upload2\\"+fileName);
+            ReadableByteChannel inChannel = null;
+            FileChannel outChannel = null;
+
+            long contentLengthLongTotal = contentLengthLongTotalLong - 12;
+
+            long contentLengthLong = contentLengthLongTotal - headStartByteLength - headEndByteLength;
+            if(contentLengthLong == 0){
+                inputStream.close();
+                ouputStream.flush();
+                ouputStream.close();
+                return "Upload success: 1";
+            }
+            System.out.println("contentLengthLongTotal:"+contentLengthLongTotal);
+            System.out.println("contentLengthLong:"+contentLengthLong);
+
+            System.out.println("2:"+TimeUtils.getNowTime());
+
+            int fileNameLength = fileName.length();
+            int headLength = 104 + fileNameLength;
+
+            inChannel = Channels.newChannel(inputStream);
+            //inChannel.read();
+            //通道间传输
+
+            outChannel = ouputStream.getChannel();
+            //上传
+            long transferLen = outChannel.transferFrom(inChannel,1,contentLengthLongTotal);
+            f("transferLen:"+transferLen);
+            transferLen = outChannel.transferFrom(inChannel,1,contentLengthLongTotal);
+            f("transferLen:"+transferLen);
+            try{
+                outChannel.close();
+                inChannel.close();
+                ouputStream.close();
+                inputStream.close();
+
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+
+            System.out.println("3:"+TimeUtils.getNowTime());
+            return "Upload success: ";
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Upload failed: " + e.getMessage();
+        }
+    }
+    /*
+     * 这个方法涉及到request.getInputStream()结果中header信息的清除，用到直接内存缓冲区，成功了
+     * */
+    @PostMapping("/upload11")
+    public String upload11(HttpServletRequest request, HttpServletResponse response,@RequestParam (value="filename") String fileName){
+        System.out.println("1:"+TimeUtils.getNowTime());
+        //String fileName = request.getHeader("filename");
+        File targetFile = new File("d:\\upload2\\"+fileName);
+        if(targetFile.exists()){
+            targetFile.delete();
+        }
+        String accept_encoding = request.getHeader("Accept-Encoding");
+        f("accept_encoding:"+accept_encoding);
+
+        String content_length = request.getHeader("Content-Length");
+        f("content_length:"+content_length);
+        //System.out.println("1:"+TimeUtils.getNowTime());
+        // 使用FileChannel直接写入磁盘
+        String requestContentType = request.getContentType();
+        System.out.println("requestContentType:"+requestContentType);
+        //String responseContentType = response.getContentType();
+        //System.out.println("responseContentType:"+responseContentType);
+        long contentLengthLongTotalLong = request.getContentLengthLong();
+        System.out.println("contentLengthLongTotalLong:"+contentLengthLongTotalLong);
+        String boundary = "--" + requestContentType.split("boundary=")[1].replace("\"", "");  // 如: "--abc123"
+        System.out.println("boundary:"+boundary);
+        String line1 = boundary;
+        f("line1_len:"+line1.length());
+        String line2 = "Content-Disposition: form-data; name=\"file\"; filename=\""+fileName+"\"";
+        f("line2_len:"+line2.length());
+        String line3 = "";
+        int sub = 104;
+        if(fileName.endsWith(".txt")){
+            line3 = "Content-Type: text/plain";
+            sub = 104;
+        }else if(fileName.endsWith(".exe")){
+            line3 = "Content-Type: application/x-msdos-program";
+            sub = 121;
+        }else{
+            line3 = "Content-Type: application/octet-stream";
+            sub = 118;
+        }
+        f("line3_len:"+line3.length());
+        String line4 = "";
+        f("line4_len:"+line4.length());
+        String line5 = boundary+"--";
+        f("line5_len:"+line5.length());
+
+        String headStart = line1+line2+line3+line4;
+        String headEnd = line5;
+        System.out.print("headStart:"+headStart);
+        System.out.print("headEnd:"+headEnd);
+        long headStartByteLength = headStart.getBytes().length;
+        long headEndByteLength = headEnd.getBytes().length;
+        System.out.println("headStartByteLength:"+headStartByteLength);
+        System.out.println("headEndByteLength:"+headEndByteLength);
+        int bufferSize = 8192;
+        //System.exit(0);
+        try {
+            InputStream inputStream = request.getInputStream();
+            FileOutputStream ouputStream = new FileOutputStream("d:\\upload2\\"+fileName);
+            ReadableByteChannel inChannel = null;
+            FileChannel outChannel = null;
+
+            long contentLengthLongTotal = contentLengthLongTotalLong - 12;
+
+            long contentLengthLong = contentLengthLongTotal - headStartByteLength - headEndByteLength;
+            if(contentLengthLong == 0){
+                inputStream.close();
+                ouputStream.flush();
+                ouputStream.close();
+                return "Upload success: 1";
+            }
+            System.out.println("contentLengthLongTotal:"+contentLengthLongTotal);
+            System.out.println("contentLengthLong:"+contentLengthLong);
+
+            System.out.println("2:"+TimeUtils.getNowTime());
+            //byte b[] = new byte[bufferSize];
+            ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
+            inChannel = Channels.newChannel(inputStream);
+            outChannel = ouputStream.getChannel();
+//            while (inChannel.read(buffer) != -1) {
+//                buffer.flip();
+//                outChannel.write(buffer);
+//                buffer.clear();
+//                break;
+//            }
+//            System.exit(0);
+            //int n;
+            //long times = contentLengthLong / (long)bufferSize;
+            //long mod = contentLengthLong % (long)bufferSize;
+            int fileNameLength = fileName.length();
+            int headLength = sub + fileNameLength;
+            int headTimes = (headLength / bufferSize) + 1;
+            f("headTimes:"+headTimes);
+            int headMod = headLength % bufferSize;
+            f("headMod:"+headMod);
+            for(int i = 1;i <= headTimes;i++){
+
+                int readCount = 0; // 已经成功读取的字节的个数
+                while (readCount < bufferSize) {
+                    int readLen = inChannel.read(buffer);
+                    if(readLen == -1){
+                        break;
+                    }
+                    readCount += readLen;
+                }
+
+            }
+            //buffer.flip();
+//            buffer.position(7).limit(30);
+//            outChannel.write(buffer);
+//            System.exit(0);
+            long contentLengthTimes = ((contentLengthLong + headMod) / (long)bufferSize) + 1;
+            for(long i = 1;i <= contentLengthTimes;i++){
+                //f("contentLengthLong:"+contentLengthLong);
+                if(i == 1){
+                    int remainLen = bufferSize - headMod;
+                    //f("remainLen:"+remainLen);
+                    if(contentLengthLong < remainLen){
+                        buffer.position(headMod).limit(headMod + (int)contentLengthLong);
+                        outChannel.write(buffer);
+                        buffer.clear();
+                        contentLengthLong = contentLengthLong - contentLengthLong;
+                        //break;
+                    }else{
+                        buffer.position(headMod).limit(headMod + remainLen);
+                        outChannel.write(buffer);
+                        buffer.clear();
+                        contentLengthLong = contentLengthLong - remainLen;
+                        //f("contentLengthLong:"+contentLengthLong);
+                    }
+                }else{
+                    if(contentLengthLong < bufferSize){
+                        buffer.position(0).limit((int)contentLengthLong);
+                        outChannel.write(buffer);
+                        buffer.clear();
+                        contentLengthLong = contentLengthLong - contentLengthLong;
+                        //break;
+                    }else{
+                        buffer.position(0).limit(bufferSize);
+                        outChannel.write(buffer);
+                        buffer.clear();
+                        contentLengthLong = contentLengthLong - bufferSize;
+                    }
+                }
+                int readCount = 0; // 已经成功读取的字节的个数
+                while (readCount < bufferSize) {
+                    int readLen = inChannel.read(buffer);
+                    if(readLen == -1){
+                        break;
+                    }
+                    readCount += readLen;
+                }
+            }
+            outChannel.close();
+            inChannel.close();
+            inputStream.close();
+            ouputStream.flush();
+            ouputStream.close();
+
+            buffer = null;
             System.out.println("3:"+TimeUtils.getNowTime());
             return "Upload success: ";
         } catch (IOException e) {
