@@ -31,7 +31,7 @@ public class MultipartConfig {
     public MultipartResolver multipartResolver() {
         try{
             CommonsMultipartResolver multipartResolver =new CustomMultipartResolver();
-            multipartResolver.setMaxUploadSize(4*1024*1024);
+            multipartResolver.setMaxUploadSize((long)2*1024*1024*100*1024);
             multipartResolver.setMaxInMemorySize(1024);
             multipartResolver.setUploadTempDir(new FileSystemResource("d:\\upload"));
             return multipartResolver;

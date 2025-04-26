@@ -101,11 +101,6 @@ public class FileController {
     * */
     @PostMapping("/upload")
     public String upload(HttpServletRequest request, HttpServletResponse response){
-
-        //CommonsMultipartResolver multipartResolver = (CommonsMultipartResolver) BeanUtils.getBean("multipartResolver");
-        //System.out.println("isMultipart:"+multipartResolver.isMultipart(request));
-        //StandardServletMultipartResolver multipartResolver = (StandardServletMultipartResolver) BeanUtils.getBean("multipartResolver");
-        //System.out.println("isMultipart:"+multipartResolver.isMultipart(request));
         System.out.println("1:"+TimeUtils.getNowTime());
         String fileName = request.getHeader("filename");
         File targetFile = new File("d:\\upload2", fileName);
@@ -116,13 +111,6 @@ public class FileController {
         // 使用FileChannel直接写入磁盘
         String requestContentType = request.getContentType();
         System.out.println("requestContentType:"+requestContentType);
-        //String responseContentType = response.getContentType();
-        //System.out.println("responseContentType:"+responseContentType);
-
-        //String boundary = "--" + requestContentType.split("boundary=")[1].replace("\"", "");  // 如: "--abc123"
-        //System.out.println("boundary:"+boundary);
-
-
         try {
             InputStream is = request.getInputStream();
             long contentLengthLong = request.getContentLengthLong();
@@ -133,12 +121,13 @@ public class FileController {
                     StandardOpenOption.CREATE_NEW,
                     StandardOpenOption.WRITE);
             // 通过通道传输数据
-            ByteBuffer buffer = ByteBuffer.allocateDirect(8192); // 直接缓冲区提升性能
+            ByteBuffer buffer = ByteBuffer.allocateDirect(8*1024*1024); // 直接缓冲区提升性能
             ReadableByteChannel sourceChannel = Channels.newChannel(is);
 
             while (sourceChannel.read(buffer) != -1) {
                 buffer.flip();
                 channel.write(buffer);
+                //channel.force(true);
                 buffer.clear();
             }
             buffer = null;
@@ -156,74 +145,8 @@ public class FileController {
     /**
      *
      */
-    //@MultipartEnabled
     @PostMapping(path = "/upload2")
     public ResponseEntity<String> upload2(@RequestParam(value = "file") MultipartFile file,HttpServletRequest request){
-        //StandardServletMultipartResolver multipartResolver = (StandardServletMultipartResolver) BeanUtils.getBean("multipartResolver");
-        //System.out.println("2 isMultipart:"+multipartResolver.isMultipart(request));
-//        if(!multipartResolver.isMultipart(request)){
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Multipart upload not allowed on this path");
-//        }
-//        try {
-//            // 将 uploadId 绑定到当前线程
-//            UploadProgressListener.setCurrentUploadId("1");
-//
-//            // 模拟文件保存（实际替换为你的业务逻辑）
-//            Files.copy(file.getInputStream(), Paths.get("d:\\tmp\\" + file.getOriginalFilename()));
-//
-//            return ResponseEntity.ok("Upload success");
-//        }catch (Exception e){
-//
-//        }finally {
-//            // 清理线程变量
-//            UploadProgressListener.clear();
-//        }
-            System.out.println("start:"+ TimeUtils.getNowTime());
-        ReadableByteChannel inChannel = null;
-        FileChannel outChannel = null;
-        FileOutputStream fos = null;
-        try{
-            inChannel = Channels.newChannel(file.getInputStream());
-            System.out.println("inChannel:"+ TimeUtils.getNowTime());
-            fos = new FileOutputStream("d:\\tmp\\"+ File.separator+file.getOriginalFilename());
-            System.out.println("new FileOutputStream:"+ TimeUtils.getNowTime());
-            outChannel = fos.getChannel();
-            System.out.println("fos.getChannel:"+ TimeUtils.getNowTime());
-            outChannel.transferFrom(inChannel,0,file.getSize());
-        }catch (Exception e){
-            e.printStackTrace();
-        }finally {
-            System.out.println("finally:"+ TimeUtils.getNowTime());
-            //关闭资源
-            try {
-                if (fos != null) {
-                    fos.close();
-                }
-                if (inChannel != null) {
-                    inChannel.close();
-                }
-                if (outChannel != null) {
-                    outChannel.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-
-        return ResponseEntity.ok("File uploaded successfully");
-    }
-    /**
-     *
-     */
-    //@MultipartEnabled
-    @PostMapping(path = "/upload3")
-    public ResponseEntity<String> upload3(@RequestParam(value = "file") MultipartFile file,HttpServletRequest request){
-        //StandardServletMultipartResolver multipartResolver = (StandardServletMultipartResolver) BeanUtils.getBean("multipartResolver");
-        //System.out.println("3 isMultipart:"+multipartResolver.isMultipart(request));
-        //CommonsMultipartResolver multipartResolver = (CommonsMultipartResolver) BeanUtils.getBean("multipartResolver");
-        //System.out.println("size:"+multipartResolver.getFileItemFactory().getSizeThreshold());
-        //multipartResolver.setMaxUploadSize(10*1024*1024);
         System.out.println("start:"+ TimeUtils.getNowTime());
         ReadableByteChannel inChannel = null;
         FileChannel outChannel = null;
@@ -255,6 +178,38 @@ public class FileController {
                 e.printStackTrace();
             }
         }
+        return ResponseEntity.ok("File uploaded successfully");
+    }
+    /**
+     *
+     */
+    @PostMapping(path = "/upload3")
+    public ResponseEntity<String> upload3(@RequestParam(value = "file") MultipartFile file){
+        ReadableByteChannel inChannel = null;
+        FileChannel outChannel = null;
+        FileOutputStream fos = null;
+        try{
+            inChannel = Channels.newChannel(file.getInputStream());
+            fos = new FileOutputStream("d:\\tmp\\"+ File.separator+file.getOriginalFilename());
+            outChannel = fos.getChannel();
+            outChannel.transferFrom(inChannel,0,file.getSize());
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+                if (inChannel != null) {
+                    inChannel.close();
+                }
+                if (outChannel != null) {
+                    outChannel.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
 
         return ResponseEntity.ok("File uploaded successfully");
@@ -262,10 +217,8 @@ public class FileController {
     /**
      *
      */
-    //@MultipartEnabled
     @PostMapping(path = "/upload4")
     public ResponseEntity<String> upload4(HttpServletRequest request){
-
 
         return ResponseEntity.ok("File uploaded successfully");
     }
@@ -274,7 +227,6 @@ public class FileController {
     * */
     @PostMapping(path = "/upload5")
     public ResponseEntity<String> upload5(HttpServletRequest request,HttpServletResponse response){
-
         try{
             String uploadDir = "d:\\upload2\\";
             if (ServletFileUpload.isMultipartContent(request)) {
