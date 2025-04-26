@@ -100,9 +100,9 @@ public class FileController {
     * 这个方法涉及到request.getInputStream()结果中header信息的清除，不要用这个方法
     * */
     @PostMapping("/upload")
-    public String upload(HttpServletRequest request, HttpServletResponse response){
+    public String upload(HttpServletRequest request, HttpServletResponse response,@RequestParam (value="filename") String fileName){
         System.out.println("1:"+TimeUtils.getNowTime());
-        String fileName = request.getHeader("filename");
+        //String fileName = request.getHeader("filename");
         File targetFile = new File("d:\\upload2", fileName);
         if(targetFile.exists()){
             targetFile.delete();
