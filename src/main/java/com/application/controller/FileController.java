@@ -1,7 +1,8 @@
 package com.application.controller;
 
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.application.common.CodeMsg;
 import com.application.common.Result;
 import com.application.config.MultipartEnabled;
 import com.application.domain.dao.req.TestInterceptorReq;
@@ -10,6 +11,7 @@ import com.application.utils.BeanUtils;
 import com.application.utils.TimeUtils;
 import com.application.utils.excel.DynamicExcelData;
 import com.application.utils.excel.ExcelDynamicExport;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -244,6 +246,8 @@ public class FileController {
                             // 保存文件
                             File uploadFile = new File(uploadDir, item.getName());
                             item.write(uploadFile);
+                        }else{
+                            System.out.println(item);
                         }
                     }
                     response.getWriter().write("success");
@@ -827,6 +831,64 @@ public class FileController {
             e.printStackTrace();
             return "Upload failed: " + e.getMessage();
         }
+    }
+
+    @RequestMapping(value = "/upload12" ,method = RequestMethod.POST)
+    public String upload12(@RequestParam(value = "files") MultipartFile[] files,@RequestParam(value = "json") String json) {
+        try{
+            try{
+                com.alibaba.fastjson.JSONArray jsonArray = JSONArray.parseArray(json);
+                System.out.println("jsonArray:"+jsonArray);
+                for(int i =0;i<=files.length - 1;i++){
+
+                    MultipartFile multipartFile = files[i];
+                    ReadableByteChannel inChannel = null;
+                    FileChannel outChannel = null;
+                    FileOutputStream fos = null;
+                    File newFile = new File(multipartFile.getOriginalFilename());
+                    if(newFile.exists()){
+                        //newFile.delete();
+                    }
+                    try{
+                        inChannel = Channels.newChannel(multipartFile.getInputStream());
+                        fos = new FileOutputStream(newFile);
+                        outChannel = fos.getChannel();
+                        outChannel.transferFrom(inChannel,0,multipartFile.getSize());
+                        newFile.setExecutable(true,false);
+                        newFile.setReadable(true,false);
+                        newFile.setWritable(true,false);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                        return "失败";
+                    }finally {
+                        try {
+                            if (fos != null) {
+                                fos.close();
+                            }
+                            if (inChannel != null) {
+                                inChannel.close();
+                            }
+                            if (outChannel != null) {
+                                outChannel.close();
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    String name = (String)jsonObject.get("name");
+
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+                return "失败";
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+            return "处理异常";
+        }
+        return "成功";
     }
 
     public static void main(String[] args) throws IOException {
