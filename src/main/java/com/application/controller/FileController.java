@@ -47,6 +47,7 @@ import java.util.*;
 @RequestMapping("/file")
 @CrossOrigin(origins = "*")
 @Slf4j
+@Api(value = "FileController", tags = { "文件上传接口" })
 public class FileController {
     static void f(Object obj) {
         System.out.println(obj);
@@ -266,51 +267,65 @@ public class FileController {
         // 文件处理逻辑
         return ResponseEntity.ok("File uploaded successfully");
     }
+    @ApiOperation("upload7")
     @PostMapping("/upload7")
     public void upload7(HttpServletRequest request, HttpServletResponse response) throws IOException {
         DiskFileItemFactory factory = new DiskFileItemFactory();
         ServletFileUpload upload = new ServletFileUpload(factory);
-        String tempDir = System.getProperty("java.io.tmpdir");
-        System.out.println("tempDir: " + tempDir);
         try {
-            String uploadDir = "d:\\upload2";
-            List<FileItem> items = upload.parseRequest(request);
-            for (FileItem item : items) {
-                if (!item.isFormField()) {
-                    // 确保上传目录存在
-                    File directory = new File(uploadDir);
-                    if (!directory.exists()) {
-                        directory.mkdirs();
-                    }
-                    // 保存文件
-                    File targetFile = new File(uploadDir, item.getName());
-                    if(targetFile.exists()){
-                        targetFile.delete();
-                    }
-                    InputStream is = item.getInputStream();
+            if (ServletFileUpload.isMultipartContent(request)) {
+                String uploadDir = "d:\\upload2";
+                List<FileItem> items = upload.parseRequest(request);
+                for (FileItem item : items) {
+                    log.debug("item.getName()："+item.getName());
+                    log.debug("item.getFieldName()："+item.getFieldName());
+                    log.debug("item.isFormField()："+item.isFormField());
+                    if (!item.isFormField()) {
+                        File directory = new File(uploadDir);
+                        if (!directory.exists()) {
+                            directory.mkdirs();
+                        }
+                        File targetFile = new File(uploadDir, item.getName());
+                        if(targetFile.exists()){
+                            targetFile.delete();
+                        }
+                        InputStream is = item.getInputStream();
 
-                    FileChannel channel = FileChannel.open(
-                            targetFile.toPath(),
-                            StandardOpenOption.CREATE_NEW,
-                            StandardOpenOption.WRITE);
-                    // 通过通道传输数据
-                    ByteBuffer buffer = ByteBuffer.allocateDirect(8192); // 直接缓冲区提升性能
-                    ReadableByteChannel sourceChannel = Channels.newChannel(is);
+                        FileChannel channel = FileChannel.open(
+                                targetFile.toPath(),
+                                StandardOpenOption.CREATE_NEW,
+                                StandardOpenOption.WRITE);
+                        ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
+                        ReadableByteChannel sourceChannel = Channels.newChannel(is);
 
-                    while (sourceChannel.read(buffer) != -1) {
-                        buffer.flip();
-                        channel.write(buffer);
-                        buffer.clear();
+                        while (sourceChannel.read(buffer) != -1) {
+                            buffer.flip();
+                            channel.write(buffer);
+                            buffer.clear();
+                        }
+                        buffer = null;
+                        is.close();
+                        channel.close();
+                        sourceChannel.close();
+                        System.out.println("1:" + TimeUtils.getNowTime());
+                    }else{
+                        InputStream is = item.getInputStream();
+
+                        BufferedReader reader = new BufferedReader( new InputStreamReader(is));
+                        String tempString = null;
+                        String valueStr = "";
+
+                        while ((tempString = reader.readLine()) != null) {
+                            valueStr = valueStr + tempString;
+                        }
+                        reader.close();
+                        log.debug("valueStr:"+valueStr);
                     }
-                    buffer = null;
-                    is.close();
-                    channel.close();
-                    sourceChannel.close();
-                    System.out.println("1:" + TimeUtils.getNowTime());
+
                 }
-
+                response.getWriter().write("success");
             }
-            response.getWriter().write("success");
+
         } catch (Exception e) {
             response.getWriter().write("fail:" + e.getMessage());
         }
